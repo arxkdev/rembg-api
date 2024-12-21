@@ -4,6 +4,7 @@ from rembg import remove
 from PIL import Image
 import uuid
 import base64
+import json
 
 app = Flask(__name__)
 
@@ -28,7 +29,16 @@ def allowed_file(filename, mimetype):
 def remove_bg():
     # They can either send the image as a file or as a base64 string
     image_file = request.files["image"]
-    image_b64 = request.form.get("image_b64")
+    image_b64 = ""
+
+    # Check if there's a base64 image in the request
+    # Check if there is a body
+    if "body" in request:
+        try:
+            body = json.loads(request["body"])
+            image_b64 = body["img_base64"]
+        except (json.JSONDecodeError, TypeError):
+            pass
 
     # Check if an image was sent in the request
     if image_file is None and image_b64 is None:
@@ -52,34 +62,43 @@ def remove_bg():
     if image_file is not None:
         input_image = Image.open(image_file)
     else:
-        input_image = Image.open(base64.b64decode(image_b64))
+        input_image = base64.b64decode(image_b64)
     
     # Generate a unique ID for filenames
     unique_id = str(uuid.uuid4()).replace("-", "")
     
     # Create unique filenames for the original and background-removed images
-    original_filename = f"{unique_id}_original.png"
-    no_bg_filename = f"{unique_id}_no_bg.png"
+    # original_filename = f"{unique_id}_original.png"
+    # no_bg_filename = f"{unique_id}_no_bg.png"
     
     # Full path to save the original image
-    original_path = os.path.join(output_dir, original_filename)
-    input_image.save(original_path, format="PNG")  # Save the original image
+    # original_path = os.path.join(output_dir, original_filename)
+    # input_image.save(original_path, format="PNG")  # Save the original image
 
     # Remove the background from the image
     output_image = remove(input_image)
     
     # Full path to save the background-removed image
-    no_bg_path = os.path.join(output_dir, no_bg_filename)
-    output_image.save(no_bg_path, format="PNG", optimize=True)  # Save the background-removed image with compression
+    # no_bg_path = os.path.join(output_dir, no_bg_filename)
+    # output_image.save(no_bg_path, format="PNG", optimize=True)  # Save the background-removed image with compression
 
     # Generate full URLs for downloading the images
-    original_image_url = request.host_url + "download/" + original_filename
-    no_bg_image_url = request.host_url + "download/" + no_bg_filename
+    # original_image_url = request.host_url + "download/" + original_filename
+    # no_bg_image_url = request.host_url + "download/" + no_bg_filename
 
-    return jsonify({
-        "original_image_url": original_image_url,
-        "no_bg_image_url": no_bg_image_url
-    })
+    # return jsonify({
+    #     "original_image_url": original_image_url,
+    #     "no_bg_image_url": no_bg_image_url
+    # })
+
+    return {
+        "headers": {
+            "Content-Type": "image/png",
+        },
+        "statusCode": 200,
+        "body": base64.b64encode(output_image).decode("utf-8"),
+        "isBase64Encoded": True
+    }
 
 @app.route("/download/<filename>", methods=["GET"])
 def download_file(filename):
