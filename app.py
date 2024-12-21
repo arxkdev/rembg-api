@@ -31,6 +31,8 @@ def remove_bg():
     image_file = request.files["image"]
     image_b64 = ""
 
+    print(request.json. request.files);
+
     # Check if there's a base64 image in the request body
     if request.json:
         try:
