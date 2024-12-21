@@ -31,18 +31,19 @@ def remove_bg():
     image_file = request.files["image"]
     image_b64 = ""
 
-    # Check if there's a base64 image in the request
-    # Check if there is a body
-    if "body" in request:
+    # Check if there's a base64 image in the request body
+    if request.json:
         try:
-            body = json.loads(request["body"])
-            image_b64 = body["img_base64"]
-        except (json.JSONDecodeError, TypeError):
+            body = request.json
+            image_b64 = body.get('img_base64', "")
+        except (ValueError, TypeError):
             pass
 
-    # Check if an image was sent in the request
-    if image_file is None and image_b64 is None:
+    # Check if an image was provided either as a file or base64 string
+    if image_file is None and not image_b64:
         return jsonify({"error": "No image provided"}), 400
+    
+    print(image_file, image_b64)
 
     # Check the file extension and MIME type
     if image_file is not None:
@@ -65,7 +66,7 @@ def remove_bg():
         input_image = base64.b64decode(image_b64)
     
     # Generate a unique ID for filenames
-    unique_id = str(uuid.uuid4()).replace("-", "")
+    # unique_id = str(uuid.uuid4()).replace("-", "")
     
     # Create unique filenames for the original and background-removed images
     # original_filename = f"{unique_id}_original.png"
