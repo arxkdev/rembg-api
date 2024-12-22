@@ -3,6 +3,7 @@ from rembg import remove
 from PIL import Image
 import requests
 import base64
+from utils.authenticate import Authenticate
 
 app = Flask(__name__)
 
@@ -32,9 +33,17 @@ def allowed_file(filename, mimetype):
     return "." in filename and \
         filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS and \
         mimetype in ALLOWED_MIME_TYPES
-        
+
 @app.route("/remove-bg", methods=["POST"])
 def remove_bg():
+    # Authenticate the user
+    api_key = request.headers.get("x-api-key")
+    authenticated = Authenticate(api_key)
+
+    # If the user is not authenticated, return an error
+    if authenticated == False:
+        return jsonify({"error": "Unauthorized"}), 401
+
     image_data = None;
     input_type = ""
 
