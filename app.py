@@ -92,15 +92,10 @@ def remove_bg():
 
     # Return the image directly
     return send_file(img_io, mimetype='image/png')
-    
-    # return {
-    #     "headers": {
-    #         "Content-Type": "image/png",
-    #     },
-    #     "statusCode": 200,
-    #     "body": base64.b64encode(output_image).decode("utf-8"),
-    #     "isBase64Encoded": True
-    # }
+
+@app.route("/")
+def index():
+    return jsonify({"message": "REMBG is up and ready!", "success": True})
 
 if __name__ == "__main__":
     app.run(debug=True)
