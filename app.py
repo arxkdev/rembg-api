@@ -90,7 +90,7 @@ def remove_bg():
     img_io.write(output_image)
     img_io.seek(0)
 
-    # Return the image direct
+    # Return the image directly
     return send_file(img_io, mimetype='image/png')
 
 @app.route("/")
