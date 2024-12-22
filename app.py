@@ -1,16 +1,10 @@
 from flask import Flask, request, jsonify, send_file, url_for
-import os
 from rembg import remove
 from PIL import Image
-import uuid
+import requests
 import base64
-import json
 
 app = Flask(__name__)
-
-# Path to the folder where images will be saved
-output_dir = os.path.join(os.path.dirname(__file__), "images")
-os.makedirs(output_dir, exist_ok=True)  # Create the folder if it doesn"t exist
 
 # Allowed image extensions and their corresponding MIME types
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
@@ -19,81 +13,68 @@ ALLOWED_MIME_TYPES = {"image/jpeg", "image/png"}
 # Maximum allowed file size (in bytes)
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
 
+# Get image data
+def get_image_data(image_data, input_type):
+    if input_type == "file":
+        image_data = image_data.read()
+    elif input_type == "base64":
+        image_data = base64.b64decode(image_data)
+    elif input_type == "url":
+        image_data = requests.get(image_data, allow_redirects=True).content
+    return image_data
+
+# Check file size by type
+def check_file_size(file):
+    return len(file)
+
 # Check if the file extension and MIME type are allowed
 def allowed_file(filename, mimetype):
     return "." in filename and \
-           filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS and \
-           mimetype in ALLOWED_MIME_TYPES
-
+        filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS and \
+        mimetype in ALLOWED_MIME_TYPES
+        
 @app.route("/remove-bg", methods=["POST"])
 def remove_bg():
-    # They can either send the image as a file or as a base64 string
-    image_file = request.files["image"]
-    image_b64 = ""
+    image_data = None;
+    input_type = ""
 
-    print(request.json. request.files);
+    # Check if the image was provided as a file
+    if request.files:
+        image_data = request.files["image"]
+        input_type = "file"
 
-    # Check if there's a base64 image in the request body
-    if request.json:
-        try:
-            body = request.json
-            image_b64 = body.get('img_base64', "")
-        except (ValueError, TypeError):
-            pass
+    # If the image was not provided as a file, check if it was provided as a base64 string
+    if request.form and "img_base64" in request.form:
+        image_data = request.form.get("img_base64")
+        input_type = "base64"
+
+    # Check if there's a URL
+    if request.form and "img_url" in request.form:
+        image_data = request.form.get("img_url")
+        input_type = "url"
 
     # Check if an image was provided either as a file or base64 string
-    if image_file is None and not image_b64:
+    if image_data is None:
         return jsonify({"error": "No image provided"}), 400
     
-    print(image_file, image_b64)
-
     # Check the file extension and MIME type
-    if image_file is not None:
-        if not allowed_file(image_file.filename, image_file.mimetype):
+    if input_type == "file":
+        if not allowed_file(image_data.filename, image_data.mimetype):
             return jsonify({"error": "Format was not supported"}), 400
-    
+        
+    # Open the image with PIL
+    input_image = get_image_data(image_data, input_type)
+        
     # Check the file size
-    if image_file is not None:
-        file_size = os.fstat(image_file.fileno()).st_size
-    else:
-        file_size = len(base64.b64decode(image_b64))
+    file_size = check_file_size(input_image, input_type)
 
+    # If the file size exceeds the maximum limit, return an error
     if file_size > MAX_FILE_SIZE:
         return jsonify({"error": f"The file exceeds the maximum size of {MAX_FILE_SIZE / (1024 * 1024)} MB"}), 400  
-
-    # Open the image with PIL
-    if image_file is not None:
-        input_image = Image.open(image_file)
-    else:
-        input_image = base64.b64decode(image_b64)
     
-    # Generate a unique ID for filenames
-    # unique_id = str(uuid.uuid4()).replace("-", "")
-    
-    # Create unique filenames for the original and background-removed images
-    # original_filename = f"{unique_id}_original.png"
-    # no_bg_filename = f"{unique_id}_no_bg.png"
-    
-    # Full path to save the original image
-    # original_path = os.path.join(output_dir, original_filename)
-    # input_image.save(original_path, format="PNG")  # Save the original image
-
     # Remove the background from the image
     output_image = remove(input_image)
     
-    # Full path to save the background-removed image
-    # no_bg_path = os.path.join(output_dir, no_bg_filename)
-    # output_image.save(no_bg_path, format="PNG", optimize=True)  # Save the background-removed image with compression
-
-    # Generate full URLs for downloading the images
-    # original_image_url = request.host_url + "download/" + original_filename
-    # no_bg_image_url = request.host_url + "download/" + no_bg_filename
-
-    # return jsonify({
-    #     "original_image_url": original_image_url,
-    #     "no_bg_image_url": no_bg_image_url
-    # })
-
     return {
         "headers": {
             "Content-Type": "image/png",
@@ -102,15 +83,6 @@ def remove_bg():
         "body": base64.b64encode(output_image).decode("utf-8"),
         "isBase64Encoded": True
     }
-
-@app.route("/download/<filename>", methods=["GET"])
-def download_file(filename):
-    path = os.path.join(output_dir, filename)
-
-    if os.path.exists(path):
-        return send_file(path)
-    else:
-        return jsonify({"error": "Path does not exist"}), 404  
 
 if __name__ == "__main__":
     app.run(debug=True)
