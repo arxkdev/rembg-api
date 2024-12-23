@@ -1,6 +1,7 @@
 import requests;
 import base64;
 import io;
+import os;
 
 from flask import Flask, request, jsonify, send_file;
 from rembg import remove;
@@ -97,6 +98,7 @@ def remove_bg():
         return jsonify({"error": f"The file data exceeds the maximum size of {MAX_FILE_SIZE / (1024 * 1024)} MB"}), 400;
     
     # Remove the background from the image
+    os.environ['U2NET_HOME'] = './u2net';
     output_image = remove(input_image);
 
     # Create BytesIO object to handle the image data
