@@ -6,6 +6,7 @@ import os;
 from flask import Flask, request, jsonify, send_file;
 from rembg import remove;
 from utils.authenticate import Authenticate;
+from config import config;
 
 app = Flask(__name__);
 
@@ -98,7 +99,6 @@ def remove_bg():
         return jsonify({"error": f"The file data exceeds the maximum size of {MAX_FILE_SIZE / (1024 * 1024)} MB"}), 400;
     
     # Remove the background from the image
-    # os.environ['U2NET_HOME'] = 'u2net/u2net.onnx';
     output_image = remove(input_image);
 
     # Create BytesIO object to handle the image data
@@ -117,4 +117,4 @@ def index():
     return jsonify({"message": "Background Remover API is up and ready!", "success": True});
 
 if (__name__ == "__main__"):
-    app.run(debug=True);
+    app.run(debug=config["debug"]);
