@@ -63,6 +63,7 @@ def allowed_file(filename, mimetype):
         filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS and \
         mimetype in ALLOWED_MIME_TYPES
 
+# API route for removing the background from an image
 @app.route("/remove-bg", methods=["POST"])
 def remove_bg():
     # Authenticate the user
@@ -106,6 +107,7 @@ def remove_bg():
     # Return the image directly
     return send_file(img_io, mimetype="image/png");
 
+# Route for the index page
 @app.route("/")
 def index():
     return jsonify({"message": "Background Remover API is up and ready!", "success": True});

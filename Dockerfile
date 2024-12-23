@@ -19,5 +19,8 @@ COPY . .
 # Expose the port on which the Flask application runs
 EXPOSE 5000
 
+# Mount a volume for the .u2net directory
+VOLUME ["/root/.u2net/u2net.onnx"]
+
 # Command to launch the application using Gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
