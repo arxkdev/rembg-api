@@ -25,8 +25,5 @@ EXPOSE 5000
 # Download the pre-trained U-2-Net model
 RUN mkdir /.u2net && curl -L https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx -o /.u2net/u2net.onnx
 
-# Mount a volume for the .u2net directory
-VOLUME ["/.u2net"]
-
 # Command to launch the application using Gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
