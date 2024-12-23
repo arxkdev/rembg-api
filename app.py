@@ -116,5 +116,8 @@ def remove_bg():
 def index():
     return jsonify({"message": "Background Remover API is up and ready!", "success": True});
 
+print("Starting the server...");
+print(f"Debug mode: {config['debug']}");
+
 if (__name__ == "__main__"):
     app.run(debug=config["debug"]);
