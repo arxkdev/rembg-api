@@ -26,4 +26,4 @@ EXPOSE 5000
 RUN mkdir u2net && curl -L https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx -o u2net/u2net.onnx
 
 # Command to launch the application using Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "--workers", "3", "--timeout", "800", "--bind", "0.0.0.0:5000", "app:app"]
