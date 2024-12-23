@@ -5,10 +5,16 @@ import os;
 
 from flask import Flask, request, jsonify, send_file;
 from rembg import remove;
+import logging;
 from utils.authenticate import Authenticate;
 from config import config;
 
 app = Flask(__name__);
+
+if __name__ != "__main__":
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
 
 # Allowed image extensions and their corresponding MIME types
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"};
