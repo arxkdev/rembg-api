@@ -98,7 +98,7 @@ def remove_bg():
         return jsonify({"error": f"The file data exceeds the maximum size of {MAX_FILE_SIZE / (1024 * 1024)} MB"}), 400;
     
     # Remove the background from the image
-    os.environ['U2NET_HOME'] = '/.u2net';
+    os.environ['U2NET_HOME'] = '/.u2net/u2net.onnx';
     output_image = remove(input_image);
 
     # Create BytesIO object to handle the image data
