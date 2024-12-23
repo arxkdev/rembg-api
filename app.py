@@ -106,7 +106,7 @@ def remove_bg():
     img_io.write(output_image);
     img_io.seek(0);
 
-    print("Image processed successfully!", file_size);
+    app.logger.info("Image processed successfully!");
 
     # Return the image directly
     return send_file(img_io, mimetype="image/png");
@@ -116,8 +116,8 @@ def remove_bg():
 def index():
     return jsonify({"message": "Background Remover API is up and ready!", "success": True});
 
-print("Starting the server...");
-print(f"Debug mode: {config['debug']}");
+app.logger.info("Starting the server...");
+app.logger.info(f"Debug mode: {config['debug']}");
 
 if (__name__ == "__main__"):
     app.run(debug=config["debug"]);
