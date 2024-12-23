@@ -53,14 +53,24 @@ def remove_bg():
         image_data = request.files["image"]
         input_type = "file"
 
-    # If the image was not provided as a file, check if it was provided as a base64 string
+    # If the image was not provided as a file, check if it was provided as a base64 string (form)
     if request.form and "img_base64" in request.form:
         image_data = request.form.get("img_base64")
         input_type = "base64"
 
-    # Check if there's a URL
+    # Check if there's a URL (form)
     if request.form and "img_url" in request.form:
         image_data = request.form.get("img_url")
+        input_type = "url"
+
+    # Check if there's a base64 string in json payload
+    if request.json and "img_base64" in request.json:
+        image_data = request.json.get("img_base64")
+        input_type = "base64"
+
+    # Check if there's a URL in json payload
+    if request.json and "img_url" in request.json:
+        image_data = request.json.get("img_url")
         input_type = "url"
 
     # Check if an image was provided either as a file or base64 string
