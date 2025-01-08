@@ -117,6 +117,11 @@ def remove_bg():
     # Return the image directly
     return send_file(img_io, mimetype="image/png");
 
+# Ping route to check if the server is up and running
+@app.route("/ping", methods=["GET"])
+def ping():
+    return jsonify({"message": "Pong!"});
+
 # Route for the index page
 @app.route("/")
 def index():
